@@ -12,10 +12,10 @@ let urls = {
  */
 let getNextFightCard = () => {
 	let options = {
-	  url: urls.base_url + urls.ufc_card_uri,
-	  transform: function ( body ) {
-      return cheerio.load( body );
-	  }
+		url: urls.base_url + urls.ufc_card_uri,
+		transform: function ( body ) {
+			return cheerio.load( body );
+		}
 	};
 	return rp( options )
 		.then(($) => {
@@ -75,10 +75,10 @@ let buildFightsFromFightCardData = ( card_matchup_data ) => {
  */
 let getFightCardData = ( mma_card ) => {
 	let options = {
-	  url: urls.base_url + mma_card.card_uri,
-	  transform: (body) => {
-      return cheerio.load(body);
-	  }
+		url: urls.base_url + mma_card.card_uri,
+		transform: (body) => {
+			return cheerio.load(body);
+		}
 	};
 	console.log( 'getFightCardData' );
 
