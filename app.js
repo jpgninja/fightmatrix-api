@@ -54,14 +54,12 @@ let getFightsOnCard = ( mma_card ) => {
  * buildFightsFromFightCardData
  */
 let buildFightsFromFightCardData = ( card_matchup_data ) => {
-	console.log('buildFightsFromFightCardData');
-
 	return Promise.map(card_matchup_data, ( matchup ) => {
     return getFight( matchup );
 	}).then(( fights ) => {
     return fights;
 	}).catch(( err )=>{
-		console.log('ERR!', err);
+		console.log('buildFightsFromFightCardData() ERR!', err);
 	});
 }
 
@@ -76,40 +74,32 @@ let getFightCardData = ( mma_card ) => {
 			return cheerio.load(body);
 		}
 	};
-	console.log( 'getFightCardData' );
 
 	return rp( options )
 		.then(($) => {
 
 			// Instantiate variables.
 			let tmpContainer;
-			let matchup;
-			let stats;
-			let f1_container;
-			let f2_container;
-			let f1_stats_container;
-			let f2_stats_container;
-			let f1 = {};
-			let f2 = {};
 			let card_matchup_data = [];
 			let matchupIndex = 1;
 
 			tmpContainer = $( '.container table.tblRank' );
 
+			// 
 			for (;tmpContainer.find( 'tr' ).eq( matchupIndex ).text() != "";matchupIndex=matchupIndex+4) {
 				// Grab data elements.
 				let tmpFightContainer = {};
 				tmpFightContainer.fighter = tmpContainer.find( 'tr' ).eq( matchupIndex );
 				tmpFightContainer.stats = tmpContainer.find( 'tr' ).eq( matchupIndex + 3 );
 
+				// Add to our array.
 				card_matchup_data.push( tmpFightContainer );
 			}
 
 			return card_matchup_data;
-
 		})
 		.catch( ( err ) => {
-			console.log( 'rp fail', err)
+			console.log( 'getFightCardData() Request ERR!', err)
 		});
 }
 
@@ -118,7 +108,6 @@ let getFightCardData = ( mma_card ) => {
  * getFight
  */
 let getFight = ( fight_data ) => {
-	let i = 0;
 	let fight = {};
 	let f1 = {
 		fighter: fight_data.fighter.find( 'td' ).eq( 0 ),
@@ -130,6 +119,7 @@ let getFight = ( fight_data ) => {
 	}
 	let fight_data_array = [ f1, f2 ];
 
+	// Map fighter data to the fight.
 	return Promise.map(fight_data_array, ( fight_data ) => {
     return getFighter( fight_data );
 	}).then(( fight ) => {
