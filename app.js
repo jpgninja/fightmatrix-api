@@ -1,5 +1,6 @@
 const rp = require( 'request-promise' );
 const cheerio = require( 'cheerio' );
+const Promise = require("bluebird");
 
 let urls = {
 	base_url: "http://www.fightmatrix.com",
@@ -34,7 +35,7 @@ let getNextFightCard = () => {
 
 		})
 		.catch( ( err ) => {
-			console.log( 'rp fail', err )
+			console.log( 'getNextFightCard(): rp() ERR!', err )
 		});
 	
 }
@@ -44,7 +45,6 @@ let getNextFightCard = () => {
  * getFightsOnCard
  */
 let getFightsOnCard = ( mma_card ) => {
-
 	return getFightCardData( mma_card ).then( buildFightsFromFightCardData );
 }
 
@@ -53,20 +53,17 @@ let getFightsOnCard = ( mma_card ) => {
  * buildFightsFromFightCardData
  */
 let buildFightsFromFightCardData = ( card_matchup_data ) => {
-	let until = card_matchup_data.length;
-	let i = 0;
-	let fights = [];
-	let tmpFight = {};
-
 	console.log('buildFightsFromFightCardData');
 
-	for (;i<until;i=i+1) {
-		tmpFight = getFight( card_matchup_data[ i ] )
-		fights.push( tmpFight );
-	}
-	console.log( 'returning fights' );
-	console.log(fights);
-	return fights;
+	return Promise.map(card_matchup_data, ( matchup ) => {
+    return getFight( matchup );
+	}).then(( fights ) => {
+		// console.log('fights is...');
+		// console.log( fights );
+    return fights;
+	}).catch(( err )=>{
+		console.log('ERR!', err);
+	});
 }
 
 
@@ -128,10 +125,8 @@ let getFightCardData = ( mma_card ) => {
  * getFight
  */
 let getFight = ( fight_data ) => {
-	// let fight_containers;
-	// let fight_stat_containers;
-
 	let i = 0;
+	let fight = {};
 	let f1 = {
 		fighter: fight_data.fighter.find( 'td' ).eq( 0 ),
 		stats: fight_data.stats.find( 'td' ).eq( 0 ),
@@ -141,32 +136,21 @@ let getFight = ( fight_data ) => {
 		stats: fight_data.stats.find( 'td' ).eq( 1 ),
 	}
 	let fight_data_array = [ f1, f2 ];
-	let fight = {};
 
-	for (;i<fight_data_array.length;i=i+1) {
-		// Get Fighter data.
-		// console.log('iteratings on %s, of total %s', i, fight_data_array.length);
-
-		getFighter( fight_data_array[ i ] )
-			.then( ( fighter ) => {
-				fight[ "fighter" + i ] = fighter;
-				// return fighter;
-			})
-			.catch(( err ) => {
-				console.log('ack! err', err)
-			});
-	}
-
-	console.log('returning fight...');
-	console.log( fight );
-	return fight;
+	return Promise.map(fight_data_array, ( fight_data ) => {
+    return getFighter( fight_data );
+	}).then(( fight ) => {
+    return fight;
+	}).catch(( err )=>{
+		console.log('ERR!', err);
+	});
 }
 
 
 /**
  * getFighter
  */
-let getFighter = async ( fight_data ) => {
+let getFighter = ( fight_data ) => {
 	let fighter = {};
 
 	// Retrieve fighter info.
@@ -186,12 +170,21 @@ let getFighter = async ( fight_data ) => {
 	fighter.odds = tmpOdds;
 	fighter.recent_record = tmpRecentRecord;
 
+// console.log(fighter);
 	return fighter;
 }
 
 
-// let next_card = getNextFightCard();
-let next_card = {"card_uri":"/upcoming-events/UFC-Fight-Night-140:-Magny-vs.-Ponzinibbio/69285/","card_name":"UFC Fight Night 140: Magny vs. Ponzinibbio [UFC]"};
-let fights = getFightsOnCard( next_card );
+getNextFightCard()
+	.then( getFightsOnCard )
+	.then(( fights ) => {
+		console.log('Fights: ');
+		console.log( fights );
+	}).catch((err) => {
+		console.log('getNextFightCard() Promise Chain ERR! ', err);
+	})
+
+// let next_card = {"card_uri":"/upcoming-events/UFC-Fight-Night-140:-Magny-vs.-Ponzinibbio/69285/","card_name":"UFC Fight Night 140: Magny vs. Ponzinibbio [UFC]"};
+// let fights = getFightsOnCard( next_card );
 
 // console.log( fights );
