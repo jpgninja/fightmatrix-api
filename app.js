@@ -45,7 +45,8 @@ let getNextFightCard = () => {
  * getFightsOnCard
  */
 let getFightsOnCard = ( mma_card ) => {
-	return getFightCardData( mma_card ).then( buildFightsFromFightCardData );
+	return getFightCardData( mma_card )
+		.then( buildFightsFromFightCardData );
 }
 
 
@@ -58,8 +59,6 @@ let buildFightsFromFightCardData = ( card_matchup_data ) => {
 	return Promise.map(card_matchup_data, ( matchup ) => {
     return getFight( matchup );
 	}).then(( fights ) => {
-		// console.log('fights is...');
-		// console.log( fights );
     return fights;
 	}).catch(( err )=>{
 		console.log('ERR!', err);
@@ -103,14 +102,8 @@ let getFightCardData = ( mma_card ) => {
 				tmpFightContainer.fighter = tmpContainer.find( 'tr' ).eq( matchupIndex );
 				tmpFightContainer.stats = tmpContainer.find( 'tr' ).eq( matchupIndex + 3 );
 
-				// console.log( 'adding tmpFightContainer' );
-				// console.log( tmpFightContainer );
-
 				card_matchup_data.push( tmpFightContainer );
 			}
-
-			// console.log(' returning card_matchup_data array... ');
-			// console.log( card_matchup_data.length );
 
 			return card_matchup_data;
 
@@ -170,11 +163,12 @@ let getFighter = ( fight_data ) => {
 	fighter.odds = tmpOdds;
 	fighter.recent_record = tmpRecentRecord;
 
-// console.log(fighter);
 	return fighter;
 }
 
-
+/**
+ * Build a list of the next fight card's various fights.
+ */
 getNextFightCard()
 	.then( getFightsOnCard )
 	.then(( fights ) => {
@@ -182,9 +176,4 @@ getNextFightCard()
 		console.log( fights );
 	}).catch((err) => {
 		console.log('getNextFightCard() Promise Chain ERR! ', err);
-	})
-
-// let next_card = {"card_uri":"/upcoming-events/UFC-Fight-Night-140:-Magny-vs.-Ponzinibbio/69285/","card_name":"UFC Fight Night 140: Magny vs. Ponzinibbio [UFC]"};
-// let fights = getFightsOnCard( next_card );
-
-// console.log( fights );
+	});
